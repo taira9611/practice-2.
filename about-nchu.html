@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>關於興大</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            /* 將背景顏色替換成背景圖片 */
+            background-image: url('../../04-photo/nchu04.jpg'); /* 路徑調整 */
+            /* 將此處替換為您的圖片路徑 */
+            background-size: cover;
+            /* 確保圖片覆蓋整個背景 */
+            background-position: center center;
+            /* 圖片置中 */
+            background-repeat: no-repeat;
+            /* 不重複圖片 */
+            position: relative;
+            display: flex;
+            color: white;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* 調整 rgba 的最後一個值 (alpha) 來控制照片亮度 (0.5 表示 50% 透明度，越接近 1 越暗) */
+            background-color: rgba(0, 0, 0, 0.7);
+            /* 從 0.5 改為 0.7，使背景更暗 */
+            z-index: -1;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 250px;
+            background-color: rgba(34, 34, 34, 0.9);
+            padding-top: 20px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            position: relative;
+        }
+
+        .sidebar ul li a {
+            display: block;
+            color: white;
+            padding: 15px 20px;
+            text-decoration: none;
+            font-size: 18px;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: #575757;
+        }
+
+        .sidebar ul li ul {
+            display: none;
+            background-color: rgba(51, 51, 51, 0.9);
+            padding-left: 20px;
+        }
+
+        .sidebar ul li:hover>ul {
+            display: block;
+        }
+
+        .sidebar ul li ul li a {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+
+        .main-content-box {
+            background-color: rgba(255, 255, 255, 0.9);
+            color: black;
+            padding: 50px;
+            border-radius: 10px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            box-sizing: border-box;
+            max-width: 1000px;
+            width: calc(100% - 300px);
+            /* 調整寬度，考慮到側邊欄 */
+            max-height: 90vh;
+            position: absolute;
+            left: 275px;
+            /* 250px (側邊欄寬度) + 25px (一些間距) */
+            top: 50%;
+            transform: translateY(-50%);
+            /* 只在Y軸上居中 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            /* 新增以下屬性來水平居中 */
+            margin-right: 25px;
+            /* 右側留一些間距 */
+            right: 0;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .main-content-box pre {
+            white-space: pre-wrap; /* 讓文字自動換行 */
+            word-wrap: break-word; /* 確保長單詞也能換行 */
+            text-align: left;
+            font-size: 18px;
+            /* 內文字體大小 */
+            line-height: 1.8;
+            /* 內文行高 */
+            color: #555;
+            /* 內文顏色 */
+            max-width: 100%; /* 確保內容不會超出父容器寬度 */
+            overflow-x: hidden; /* 隱藏水平滾動條 */
+        }
+
+        .main-content-box img.history-image {
+            width: 90%;
+            max-width: 900px;
+            height: auto;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+
+        /* 調整標題樣式 */
+        .main-content-box h1 {
+            font-size: 40px;
+            /* 標題字體大小 */
+            color: black;
+            /* 標題顏色 */
+            margin-bottom: 25px;
+            /* 標題下方間距 */
+            font-weight: bold;
+            /* 標題粗細 */
+        }
+
+        /* 調整內文樣式 */
+        .main-content-box p {
+            font-size: 25px;
+            /* 內文字體大小 */
+            line-height: 1.8;
+            /* 內文行高 */
+            color: #555;
+            /* 內文顏色 */
+            text-align: left;
+            /* 確保內文靠左對齊 */
+            max-width: 100%;
+            font-weight: bold;
+        }
+
+
+        .main-content-box ul {
+            font-size: 22px;
+            /* 內文字體大小 */
+            line-height: 1.8;
+            /* 內文行高 */
+            color: #555;
+            /* 內文顏色 */
+            text-align: left;
+            /* 確保內文靠左對齊 */
+            max-width: 100%;
+        }
+
+        .main-content-box pre {
+            font-size: 18px;
+            /* 內文字體大小 */
+            line-height: 1.8;
+            /* 內文行高 */
+            color: #555;
+            /* 內文顏色 */
+            text-align: left;
+            /* 確保內文靠左對齊 */
+            max-width: 100%;
+        }
+
+        .main-content-box ul {
+            padding-left: 20px;
+            /* 列表左邊距 */
+        }
+
+        .main-content-box ul li {
+            margin-bottom: 10px;
+            /* 列表項目下方間距 */
+        }
+
+        .main-content-box ul li b {
+            color: #222;
+            /* 列表項目中粗體字的顏色 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="sidebar">
+        <ul>
+            <li><a href="#" id="home-link-from-about">首頁</a></li>
+            <li>
+                <a href="#" id="recognize-nchu-link">認識興大</a>
+                <ul>
+                    <li><a href="#" id="history-link">簡史</a></li>
+                    <li><a href="#" id="focus-link">學校發展重點</a></li>
+                </ul>
+            </li>
+            <li><a href="#" id="nchu-map">地圖導覽</a></li>
+        </ul>
+    </div>
+
+    <div class="main-content-box" id="main-content">
+    </div>
+
+    <template id="template-history">
+        <h1>學校簡史</h1>
+        <img src="./Reference Web Pages/認識興大01.gif" alt="認識興大簡史" class="history-image"> </template>
+
+    <template id="template-focus">
+        <h1>學校發展重點</h1>
+        <pre>
+學校發展重點
+       校務發展是永續經營的大業，本校邁入百年校史發展，將持續秉持「承先啟後、繼往開來」高等教育之責任，亟思有所進取，擘劃興大新世紀的願景，我們將以百年深耕的成果為基礎，戮力達成110-115學年度校務發展重點，展望過去，耕耘現在，策勵未來，永續經營。
+ 
+一、提升教育品質，培育優質跨域人才：將推動招生專業化、落實課程精實與創新、積極推動2030雙語教學、強化科技融入教學、通識教育再造、完善教師教學提升機制、發展創新教學活化課程設計、深耕中臺灣區域教育發展等方案，提供學生更優質的學習場域與教學品質，提升學習成效。
+ 
+二、鼓勵學生全人發展，提升競爭力：透過教研設備更新，於健康且安全無虞之環境中安心學習，提供多元學習管道，培養學生合作與溝通協調之能力；加強跨領域學習，發揮學以致用的精神，促進學生全人發展，提升競爭力。
+ 
+三、強化國際合作發展，促進國際接軌：強化國際化行政支持系統，提升推動國際事務之能量，積極培育與延攬國際優秀人才，聚焦跨領域發展、鼓勵校際及國際的合作，促進大學教育國際化及多元文化與價值之世界觀，提升學校排名與聲望，提升國際頂尖競爭力。
+ 
+四、發展特色研究領域，追求學術卓越：厚植研發能量，提升農業生技、理工及人社研究特色發展，並強化跨域資源整合，共同爭取國家型計畫，形塑校園合作文化。並推動人才延攬與培育，制定多項獎勵措施，提升學術研究能量，提升進入ESI世界前1%領域數，促進學術卓越發展優勢。
+ 
+五、強化產學合作鏈結，創造興大品牌價值：鼓勵師生投入原創性研究，發展應用科學研究；加強產業鏈結，與企業在校園內設置聯合研發中心，並鼓勵校際及跨國合作；結合區域產業成立產學聯盟，協助產業轉型及技術自主，以提升產品價值，創造興大品牌價值，提升本校學術地位與能見度。
+ 
+六、優化行政效能，提升校務專業管理：引進企業經營理念與人才，活絡組織功能與行政品質。善用各項資源，提升學校形象，配合學校營運計畫，建立良善之財務運作與控管機制，並建立校務研究機制，支持優質校務管理與健全發展。
+ 
+七、完善校園整體規劃與建設，擘劃百年永續經營：積極推動校園整體完善規劃與建設，致力改善老舊建築及進行新建工程與資產活化、加強資訊圖資設備、提升學生住宿品質，及因應未來校地需求與配合政府政策積極推動大學城、「南投分部」及「復興校區」等規劃，追求百年永續經營。
+ 
+八、善盡大學社會責任，建立SDGs典範：設置大學社會責任專責辦公室，鼓勵師生投入社會服務，整合各領域教師共同解決社會問題，強化學生多元服務與社區在地學習，培育大學社會責任實踐團隊，並實踐聯合國SDGs 17項永續發展目標，建立標竿典範，提升大學影響力。
+ 
+九、積極發展學院特色，提升優勢競爭力：本校現有12個學院(含循環經濟研究學院及創新產業暨國際學院)，將推動領域特色發展，促進國際化，積極投入人才養成、學術研究、以及扶植產業的角色。亦配合國家政策推展與發展需求成立「醫學院」，並規劃百年深耕拓展校地，籌建南投分部及復興校區等，持續提升優勢特色與競爭力。
+ 
+十、完善財務規劃，厚植根基發展：建立良善之財務運作與控管機制，活化資產，並積極推動節流與開拓財源措施，樹立品牌口碑，推動專案募款，增加校務基金自主財源，奠定學校永續發展基石。
+ 
+       本校深自期許成為領航中臺灣躍登世界舞臺的知識中心，推動國家高等教育，秉持「立足中臺灣、放眼全世界」，結合地方政府、研究機構、與中部科學園區產業資源，培養具備關懷人類、尊重生命、終身學習理念與能力的地球菁英公民，落實校長治校理念，發揮「北臺大、中興大、南成大」之社會功能，充份展現本校優良傳統與卓越學術，精進校務治理與永續發展，成為所世界級的頂尖研究型綜合大學，躍升新世紀高峰。
+    </pre>
+    </template>
+
+    <template id="template-about-nchu">
+        <h1>認識興大</h1>
+        <p style="text-align: left;">
+            中興大學位於台灣中部，是一所歷史悠久、聲譽卓著的綜合型研究大學。
+        </p>
+        <ul style="text-align: left;">
+            <li><b>多元學科：</b>涵蓋農業、工程、管理、生命科學、社會科學、人文藝術等多領域學院。</li>
+            <li><b>農學與生命科學實力強：</b>以農業科學與生物科技研究聞名全台。</li>
+            <li><b>研究與產學合作：</b>積極推動產學合作，與企業及政府機構合作緊密。</li>
+            <li><b>校園環境優美：</b>校園綠意盎然，具備良好的學習與生活環境。</li>
+        </ul>
+    </template>
+
+    <script>
+        const mainContent = document.getElementById("main-content");
+
+        // 函數：加載「認識興大」內容
+        function loadAboutNchuContent() {
+            const template = document.getElementById("template-about-nchu").content.cloneNode(true);
+            mainContent.innerHTML = "";
+            mainContent.appendChild(template);
+        }
+
+        // 頁面載入時預設顯示「認識興大」的內容
+        document.addEventListener("DOMContentLoaded", loadAboutNchuContent);
+
+        // 為「首頁」連結添加事件監聽器
+        document.getElementById("home-link-from-about").addEventListener("click", (e) => {
+            e.preventDefault();
+            // 從 about-nchu.html (位於 Reference Web Pages) 跳轉到 loading-page.html (假設也在 Reference Web Pages)
+            window.location.href = 'loading-page.html?from=home';
+        });
+
+        // 為「認識興大」主選單項目添加事件監聽器
+        document.getElementById("recognize-nchu-link").addEventListener("click", (e) => {
+            e.preventDefault();
+            loadAboutNchuContent();
+        });
+
+        document.getElementById("history-link").addEventListener("click", (e) => {
+            e.preventDefault();
+            const template = document.getElementById("template-history").content.cloneNode(true);
+            mainContent.innerHTML = "";
+            mainContent.appendChild(template);
+        });
+
+        document.getElementById("focus-link").addEventListener("click", (e) => {
+            e.preventDefault();
+            const template = document.getElementById("template-focus").content.cloneNode(true);
+            mainContent.innerHTML = "";
+            mainContent.appendChild(template);
+        });
+
+        // 為「地圖導覽」連結添加事件監聽器
+        document.getElementById("nchu-map").addEventListener("click", (e) => {
+            e.preventDefault();
+            // 從 about-nchu.html (位於 Reference Web Pages) 跳轉到 loading-page.html (假設也在 Reference Web Pages)
+            // loading-page.html 會再根據 from=map 跳轉到 nchu-map-12.html (也在 Reference Web Pages)
+            window.location.href = 'loading-page.html?from=map';
+        });
+    </script>
+</body>
+
+</html>

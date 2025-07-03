@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中興大學模型展示12</title>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: sans-serif;
+            position: relative;
+            /* 確保文字提示和說明視窗可以相對定位 */
+        }
+
+        canvas {
+            display: block;
+        }
+
+        /* 漢堡條按鈕樣式 */
+        .hamburger {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 25px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            cursor: pointer;
+            z-index: 100;
+            /* 確保在最上層 */
+        }
+
+        .hamburger span {
+            display: block;
+            width: 100%;
+            height: 3px;
+            background-color: white;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+
+        /* 漢堡條動畫 (X 形) */
+        .hamburger.open span:nth-child(1) {
+            transform: translateY(11px) rotate(45deg);
+        }
+
+        .hamburger.open span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.open span:nth-child(3) {
+            transform: translateY(-11px) rotate(-45deg);
+        }
+
+        /* 側邊選單樣式 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            right: -250px;
+            /* 初始隱藏在右側，這個是側邊選單，維持在右邊 */
+            width: 250px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding-top: 60px;
+            transition: right 0.3s ease;
+            z-index: 99;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar.open {
+            right: 0;
+            /* 顯示選單 */
+        }
+
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            padding: 15px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar ul li:last-child {
+            border-bottom: none;
+        }
+
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar ul li a:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 模型名稱提示框樣式 */
+        #model-name-tooltip {
+            position: absolute;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-size: 14px;
+            pointer-events: none;
+            /* 讓滑鼠事件穿透 */
+            z-index: 90;
+            /* 確保在模型之上但低於漢堡條 */
+            display: none;
+            /* 預設隱藏 */
+            white-space: nowrap;
+            /* 不換行 */
+        }
+
+        /* 建築說明視窗樣式 */
+        #building-info-panel {
+            position: fixed;
+            top: 0;
+            left: -350px;
+            /* 初始隱藏在左側 */
+            width: 350px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: left 0.4s ease-out;
+            /* 平滑滑入滑出效果 */
+            z-index: 95;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            overflow-y: auto;
+        }
+
+        /* 開啓時的樣式 */
+        #building-info-panel.open {
+            left: 0;
+            /* 顯示視窗 */
+        }
+
+        #building-info-panel h2 {
+            margin-top: 0;
+            color: #ffee00;
+            font-size: 24px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        #building-info-panel p {
+            font-size: 16px;
+            /* 文字大小 */
+            line-height: 1.6;
+            /* 行高 */
+            margin-bottom: 15px;
+            /* 段落底部間距 */
+            color: white;
+            /* 文字顏色，例如淺灰色 */
+            text-align: justify;
+            /* 文字對齊方式，例如兩端對齊 */
+            font-family: "微軟正黑體", sans-serif;
+            /* 字體 */
+            /* 您可以添加更多 CSS 屬性來控制文字格式 */
+        }
+
+        /* 關閉按鈕樣式 */
+        #building-info-panel .close-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            /* 移到右側 */
+            width: 38px;
+            /* 新增：明確設定寬度 */
+            height: 38px;
+            /* 新增：明確設定高度，與寬度相同 */
+            display: flex;
+            /* 新增：使用 flexbox 讓內容置中 */
+            justify-content: center;
+            /* 新增：水平置中 */
+            align-items: center;
+            /* 新增：垂直置中 */
+            font-size: 28px;
+            color: white;
+            cursor: pointer;
+            /* padding: 5px; /* 移除 padding，因為已經使用 width/height 和 flexbox 控制大小和內容位置 */
+            border-radius: 50%;
+            /* 保持 50% 圓角 */
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: background-color 0.3s ease;
+        }
+
+        #building-info-panel .close-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+    <script type="importmap">
+        {
+          "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"
+          }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="hamburger" id="hamburger-button">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+
+    <div class="sidebar" id="sidebar-menu">
+        <ul>
+            <li><a href="#" id="home-link">首頁</a></li>
+            <li><a href="#" id="know-nchu">認識興大</a></li>
+            <li><a href="#" data-model-id="blockA">區塊A</a></li>
+            <li><a href="#" data-model-id="blockB">區塊B</a></li>
+            <li><a href="#" data-model-id="blockC">區塊C</a></li>
+            <li><a href="#" data-model-id="blockD">區塊D</a></li>
+            <li><a href="#" data-model-id="blockE">區塊E</a></li>
+        </ul>
+    </div>
+
+    <div id="model-name-tooltip"></div>
+
+    <div id="building-info-panel">
+        <span class="close-button" id="close-info-panel">&times;</span>
+        <h2 id="info-panel-title">建築名稱</h2>
+        <p id="info-panel-content">
+            這裡會顯示建築物的詳細說明內容。
+        </p>
+    </div>
+
+    <script type="module">
+
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // 1. 初始化場景、攝影機和渲染器
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xcccccc);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 0, 5);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement); // 將渲染器畫布添加到 body
+
+        // 2. 添加環境光和方向光
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1).normalize();
+        scene.add(directionalLight);
+
+        // 3. 初始化 OrbitControls
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.screenSpacePanning = false;
+        controls.minDistance = 0.5;
+        controls.maxDistance = 50;
+        controls.enablePan = true;
+        controls.enableRotate = true;
+        controls.enableZoom = true;
+
+        // 4. 初始化 GLTFLoader, Raycaster, Mouse Vector
+        const loader = new GLTFLoader();
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+
+        let loadedModel = null;
+
+        const targetBuildingNames = [
+            "化材大樓", "國農中心", "圓廳", "小禮堂", "惠蓀堂",
+            "應用科技大樓", "森林館", "水保二館", "水保館", "理工大樓",
+            "生技所", "生命科學大樓", "生管所", "區塊A", "區塊B", "區塊C", "區塊D", "區塊E",
+            "興創基地", "永豐銀行", "結構蛋白體中心", "防疫檢疫大樓", "電機大樓", "食品暨生技實習工廠",
+            "食品暨生物科技大樓", "食安大樓"
+        ];
+
+        // 將 targetBuildingNames 儲存為 Map 以便快速查找
+        const targetBuildings = new Map(); // Key: Building Name, Value: THREE.Object3D (Mesh or Group)
+
+        let modelCenter = new THREE.Vector3();
+        let modelSize = new THREE.Vector3();
+
+        const hamburgerButton = document.getElementById('hamburger-button');
+        const sidebarMenu = document.getElementById('sidebar-menu');
+        const tooltip = document.getElementById('model-name-tooltip');
+        const infoPanel = document.getElementById('building-info-panel');
+        const infoPanelTitle = document.getElementById('info-panel-title');
+        const infoPanelContent = document.getElementById('info-panel-content');
+        const closeInfoPanelButton = document.getElementById('close-info-panel');
+        const homeLink = document.getElementById('home-link');
+        const knowNchuLink = document.getElementById('know-nchu'); // 新增：獲取「認識興大」連結元素
+
+        let lockedBuilding = null; // 點擊後被鎖定的建築物件
+
+        // 建築說明資料
+        const buildingDescriptions = {
+            "化材大樓": "中興大學的 化工暨材料大樓（化材館）是工程學院經化學工程與材料科學系之核心建築，主要承載 化學工程學系 與 材料科學與工程學系（前身為材料工程系），自建館以來相關系所逐步進駐並發展至今。設備先進，支持同時進行教學與高端科研，包括奈米材料、薄膜製程與材料分析等領域。",
+
+            "國農中心": "「國農中心」設於國立中興大學，主力推動國際農業研究、教學與交流，並整合校內外教師資源，舉辦講座與研討會，促進國際人才培育與國際研究合作。它升至包含行政、教學、研究及育成的複合型機構，也於頂樓設育成中心，吸引外部廠商進駐。",
+
+            "圓廳": "圓廳 是國立中興大學位於學生活動中心內的綜合美食與生活休閒空間，自2017–2018 年整修完成後，以其圓形屋頂命名，並獲選為全校餐飲與社區生活熱點 。",
+
+            "小禮堂": "中興大學的 小禮堂 是位於校內由學務處課外活動組所管理的中型演講與展演場地，適合作為講座、成果發表、社團活動等用途。提供給校內學生社團與單位舉辦學術、文化、公益、康樂、聯誼、體育等活動之用，並優先保留場地使用權。",
+
+            "惠蓀堂": "中興大學最具代表性的建築之一，以第二任校長湯惠蓀命名，他於1963–1966年間推動校務，並因公殉職；為紀念他，是校園活動和畢業典禮的重要場地。",
+
+            "應用科技大樓": "工學院與所屬系所（如環工、化工、材料、機械、生醫工程等）均設置於此，並設置多個專業研究中心，屬於教學與實驗性用途的多功能樓宇，兼具辦公室、教室、會議室與實驗室功能，地下室設有國際會議廳（可容納約100人），配備電腦視訊、投影與音響等設備，適合研討會與大型講座。",
+
+            "森林館": "中興大學森林館主要作為森林學系的教學與研究大樓，包含森林一館與二館，目前已發展為擁有一至三層樓的專業系統建築。該館規劃精準，配置包含實驗室、教室與研究室等學術空間，以支援森林學相關的教育與實習。",
+
+            "水保二館": "隸屬水土保持學系，主要功能為教學、實驗、行政與檔案資料管理場所，與一館間通道並附設實驗設備，包括大雨水槽、小雨水槽、植生工程設備等，強化實務教學。例行舉辦多種教學與推廣課程，包含水土保持技術、公務機關訓練等 。",
+
+            "水保館": "水土保持館一館主要作為水土保持學系的教學與研究場所，設有多個實驗室與教室，支援各類課程與實習活動。。",
+
+            "理工大樓": "雖然過去是理學院和工學院的主要系館，但目前理工大樓主要作為行銷系的教室，此外，農村規劃研究所、土壤調查試驗中心和實驗林管理處也共同使用這棟大樓。雖然理、工學院已經遷出，但它依然是校園中重要的教學和研究空間，主要提供行銷系、農村規劃研究所、土壤調查試驗中心和實驗林管理處使用。",
+
+            "生技所": "生物科技研究所所使用的教學樓。",
+
+            "生命科學大樓": "生命科學學院主要大樓，包含多個生物相關系所。它整合了生物科學所需的師資、空間資源、圖書、研究設備、研究材料、相關智庫與技術支援，為生命科學的教學與研究提供了優質的環境。是中興大學在生態多樣性、動植物生理、生物技術、分子生物、生物化學、生物醫學、基因體學、生物資訊學、轉譯醫學等多元領域發展的重要基地。",
+
+            "生管所": "是生物產業管理研究所使用的教學樓。",
+
+            "興創基地": "為具創新技術或經營模式的團隊提供整合育成，是創業種子成長的搖籃。",
+
+            "永豐銀行": "永豐銀行打造「e化實驗分行」進駐興大，強調數位、無紙化的校園金融服務。",
+
+            "結構蛋白體中心": "中興大學結構蛋白體中心（Structural Proteomics Center）是該校於生物科學領域的重要研究設施，專注於蛋白質結構與功能分析，並在結構生物學與藥物開發方面扮演關鍵角色。並與國內外多個研究機構建立合作關係，進行跨領域的研究與技術交流。",
+
+            "防疫檢疫大樓": "防疫檢疫大樓為農業部動植物防疫檢疫署台中分署的辦公所在地。主要用於以下目的：防疫研究、檢疫工作、教學培訓、生物科技發展。",
+
+            "電機大樓": "電機大樓是電機資訊學院和電機工程學系的主要系館。這是一棟非常現代化且設備齊全的建築物，為電機相關領域的教學與研究提供優良的環境。",
+
+            "食品暨生技實習工廠": "食品暨生技實習工廠是隸屬於食品暨應用生物科技學系的重要實習與研究基地。它不僅提供學生實務操作的機會，也生產多種校內知名產品，並支援相關的推廣與研究活動。是一個多功能的實體場域，不僅為學生提供寶貴的實務經驗，也透過產品生產和推廣服務，將學校的研發成果回饋社會。",
+
+            "食品暨生物科技大樓": "食品暨生物科技大樓是食品暨應用生物科技學系與生物科技學研究所的核心建築。這棟大樓提供了現代化的教學、研究和行政空間，是培育食品科學與生物科技人才的重要基地。",
+
+            "食安大樓": "正式名稱是食品安全及校園健康大樓。這棟大樓是中興大學在食品安全領域投入大量資源的象徵，也是提升國家食品安全的重要基地。大樓內部設有高規格的實驗室與研究空間，旨在進行最尖端的食品安全檢測、分析與研究。它扮演著提升台灣食品檢驗技術水準、解決食品安全問題的關鍵角色。",
+
+            "區塊A": "該區塊在大門口旁，唯一一棟建築物為惠蓀堂。",
+
+            "區塊B": "該區塊被中興路、大學路、大學北路和中興東路包圍。建築物有化才大樓、結構蛋白中心、生命科學大樓、電機大樓和應用科技大樓",
+
+            "區塊C": "該區塊緊鄰大學北路旁，佇立著圓廳與小禮堂。",
+
+            "區塊D": "該區塊被椰林路、大學路、大學北路和中興東路包圍。建築物有理工大樓、森林館、水保館和水保二館",
+
+            "區塊E": "該區塊被椰林路、大學路、大學北路和國光路包圍。建築物有國農中心、生管所、生技所和食品暨生物科技大樓、食品暨生技實習工廠、防疫檢疫大樓和食安大樓。"
+            // 為「場地」添加說明，如果您的模型中也有名為「場地」的物件
+        };
+
+
+        // 漢堡選單開關
+        hamburgerButton.addEventListener('click', () => {
+            sidebarMenu.classList.toggle('open');
+            hamburgerButton.classList.toggle('open');
+            // 如果漢堡選單打開，且說明面板是打開的，可以考慮關閉說明面板，反之亦然
+            // 避免兩個面板同時打開造成界面混亂，可根據UI設計調整
+            if (infoPanel.classList.contains('open') && sidebarMenu.classList.contains('open')) {
+                infoPanel.classList.remove('open');
+                // 並恢復被鎖定物件的控制器 (無需恢復材質)
+                if (lockedBuilding) {
+                    lockedBuilding = null;
+                    controls.enabled = true;
+                }
+            }
+        });
+
+        // 關閉說明面板按鈕
+        closeInfoPanelButton.addEventListener('click', () => {
+            if (lockedBuilding) {
+                // 解鎖控制器 (無需恢復材質)
+                lockedBuilding = null;
+                controls.enabled = true; // 啟用控制器
+                console.log("點擊關閉按鈕，解鎖視角。");
+            }
+            infoPanel.classList.remove('open'); // 隱藏說明面板
+        });
+
+        // 修改：「首頁」連結點擊事件處理，導向 loading頁面.html?from=home
+        homeLink.addEventListener('click', (event) => {
+            event.preventDefault(); // 阻止連結預設行為
+            window.location.href = 'loading-page.html?from=home'; // 導向 loading頁面並帶上參數
+        });
+
+        // 新增：「認識興大」連結點擊事件處理
+        knowNchuLink.addEventListener('click', (event) => {
+            event.preventDefault(); // 阻止連結預設行為
+            window.location.href = 'loading-page.html?from=about'; // 導向 loading頁面並帶上參數
+        });
+
+
+        // 5. 載入模型
+        loader.load(
+            './03-glb/NCHU-3.glb',
+            function (gltf) {
+                loadedModel = gltf.scene;
+                scene.add(loadedModel);
+                console.log('模型載入成功！', loadedModel);
+
+                // 遍歷模型中的所有子物件，找到目標建築物
+                targetBuildingNames.forEach(name => {
+                    const building = loadedModel.getObjectByName(name);
+                    if (building) {
+                        targetBuildings.set(name, building); // 儲存目標建築物件本身
+                        console.log(`找到並儲存了 "${name}"。`);
+                    } else {
+                        console.warn(`模型中找不到名稱為 "${name}" 的物件。請檢查模型結構。`);
+                    }
+                });
+
+                // 計算模型中心和大小，並將模型中心歸零
+                const box = new THREE.Box3().setFromObject(loadedModel);
+                box.getCenter(modelCenter);
+                box.getSize(modelSize);
+
+                loadedModel.position.sub(modelCenter); // 將模型移動到世界座標中心
+
+                updateViewMode(0); // 初始視角
+
+            },
+            function (xhr) {
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+            },
+            function (error) {
+                console.error('載入模型時發生錯誤！', error);
+            }
+        );
+
+        // 視角切換函數
+        function updateViewMode(mode) {
+            if (!loadedModel) return;
+
+            const maxDim = Math.max(modelSize.x, modelSize.y, modelSize.z);
+            const distanceFactor = 0.45; // 調整相機距離模型大小的比例
+            let target = new THREE.Vector3(0, 0, 0); // 模型中心點現在是 (0,0,0)
+
+            // 設定相機的初始位置
+            camera.position.set(maxDim * distanceFactor, maxDim * distanceFactor * 0.5, maxDim * distanceFactor * 1.5);
+            camera.lookAt(target);
+
+            controls.target.copy(target);
+            controls.object.position.copy(camera.position);
+            controls.update();
+        }
+
+        let currentHoveredBuilding = null; // 當前滑鼠懸停在上面的建築物件
+
+        // 滑鼠移動事件處理 (只顯示提示框，不發光)
+        function onMouseMove(event) {
+            if (lockedBuilding) return; // 如果有鎖定物件，則不處理懸停效果
+
+            mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+            mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+            raycaster.setFromCamera(mouse, camera);
+
+            let intersectedBuilding = null; // 當前射線相交的建築物件
+            let intersectionPoint = null; // 相交點
+
+            // 遍歷所有目標建築物，檢查是否有交集
+            for (const [name, building] of targetBuildings) {
+                // 只檢查該建築物內的 Mesh 子物件
+                const intersects = raycaster.intersectObjects(building.children, true);
+                if (intersects.length > 0) {
+                    // 找到第一個相交的建築物（可能是多個 Mesh 構成的建築）
+                    intersectedBuilding = building;
+                    intersectionPoint = intersects[0].point; // 獲取相交點
+                    break;
+                }
+            }
+
+            // 定義不顯示提示框的區塊
+            const noTooltipBlocks = ["區塊A", "區塊B", "區塊C", "區塊D", "區塊E"];
+
+            if (intersectedBuilding && intersectedBuilding !== currentHoveredBuilding) {
+                // 滑鼠從一個建築物移到另一個建築物
+                if (currentHoveredBuilding) {
+                    // 如果上一個懸停的建築不是不顯示提示框的，則恢復鼠標樣式
+                    if (!noTooltipBlocks.includes(currentHoveredBuilding.name)) {
+                        document.body.style.cursor = 'auto';
+                    }
+                }
+
+                currentHoveredBuilding = intersectedBuilding; // 更新當前懸停物件
+
+                // 檢查當前懸停的建築是否在不顯示提示框的列表中
+                if (noTooltipBlocks.includes(intersectedBuilding.name)) {
+                    document.body.style.cursor = 'auto'; // 不變為手型指針
+                    tooltip.style.display = 'none'; // 隱藏提示框
+                    tooltip.textContent = '';
+                } else {
+                    document.body.style.cursor = 'pointer'; // 改變鼠標樣式
+                    // 顯示提示框
+                    tooltip.textContent = intersectedBuilding.name;
+                    tooltip.style.display = 'block';
+
+                    // 將 3D 相交點轉換為 2D 螢幕座標
+                    const vector = new THREE.Vector3();
+                    vector.copy(intersectionPoint);
+                    vector.project(camera);
+
+                    const x = (vector.x * .5 + .5) * window.innerWidth;
+                    const y = (vector.y * -.5 + .5) * window.innerHeight;
+
+                    tooltip.style.left = `${x + 10}px`; // 提示框位置稍微偏移滑鼠
+                    tooltip.style.top = `${y - 20}px`;
+                }
+
+            } else if (!intersectedBuilding && currentHoveredBuilding) {
+                // 滑鼠從建築物移開
+                currentHoveredBuilding = null;
+                document.body.style.cursor = 'auto'; // 恢復鼠標樣式
+
+                tooltip.style.display = 'none'; // 隱藏提示框
+                tooltip.textContent = '';
+            } else if (intersectedBuilding && intersectedBuilding === currentHoveredBuilding) {
+                // 滑鼠仍在同一個建築物上移動，只有當它不在不顯示提示框的列表中才更新位置
+                if (!noTooltipBlocks.includes(intersectedBuilding.name)) {
+                    const vector = new THREE.Vector3();
+                    vector.copy(intersectionPoint);
+                    vector.project(camera);
+
+                    const x = (vector.x * .5 + .5) * window.innerWidth;
+                    const y = (vector.y * -.5 + .5) * window.innerHeight;
+
+                    tooltip.style.left = `${x + 10}px`;
+                    tooltip.style.top = `${y - 20}px`;
+                }
+            }
+        }
+
+
+        // 修改 onMouseClick 函數，只在點擊 Three.js 畫布空白處時隱藏說明面板
+        function onMouseClick(event) {
+            // 判斷點擊事件是否發生在 Three.js 渲染畫布上
+            const clickedOnCanvas = event.target === renderer.domElement;
+
+            if (clickedOnCanvas) {
+                mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+                raycaster.setFromCamera(mouse, camera);
+
+                let clickedBuilding = null;
+
+                // 遍歷所有目標建築物，檢查是否有交集
+                for (const [name, building] of targetBuildings) {
+                    const intersects = raycaster.intersectObjects(building.children, true);
+                    if (intersects.length > 0) {
+                        clickedBuilding = building;
+                        break;
+                    }
+                }
+
+                if (clickedBuilding) {
+                    // *** 新增的判斷：如果點擊的是特定區塊，則不執行後續的鎖定和資訊面板邏輯 ***
+                    const disabledClickBlocks = ["區塊A", "區塊B", "區塊C", "區塊D", "區塊E"];
+                    if (disabledClickBlocks.includes(clickedBuilding.name)) {
+                        console.log(`點擊了 "${clickedBuilding.name}"，此區塊不支援從模型上點擊切換視角。`);
+                        // 如果有鎖定建築，需要確保此時可以解鎖，避免卡住
+                        if (lockedBuilding) {
+                            lockedBuilding = null;
+                            controls.enabled = true; // 啟用控制器
+                            infoPanel.classList.remove('open'); // 隱藏說明視窗
+                        }
+                        // 點擊模型時，如果右側選單是開著的，就關閉它
+                        if (sidebarMenu.classList.contains('open')) {
+                            sidebarMenu.classList.remove('open');
+                            hamburgerButton.classList.remove('open');
+                        }
+                        return; // 終止函數執行
+                    }
+                    // *** 新增判斷結束 ***
+
+                    if (lockedBuilding === clickedBuilding) {
+                        // 如果點擊的是當前已經鎖定的建築，則解鎖
+                        lockedBuilding = null;
+                        controls.enabled = true; // 啟用控制器
+                        console.log(`解鎖視角：${clickedBuilding.name}`);
+
+                        // 隱藏說明視窗
+                        infoPanel.classList.remove('open');
+                        // 點擊模型時，如果右側選單是開著的，就關閉它
+                        if (sidebarMenu.classList.contains('open')) {
+                            sidebarMenu.classList.remove('open');
+                            hamburgerButton.classList.remove('open');
+                        }
+
+                    } else {
+                        // 如果點擊的是新建築物，或沒有鎖定物件
+                        lockedBuilding = clickedBuilding; // 鎖定新點擊的建築
+                        controls.enabled = false; // 禁用控制器
+                        console.log(`鎖定視角到：${lockedBuilding.name}`);
+
+                        // 隱藏提示框
+                        tooltip.style.display = 'none';
+                        tooltip.textContent = '';
+
+                        // 點擊模型時，如果右側選單是開著的，就關閉它
+                        if (sidebarMenu.classList.contains('open')) {
+                            sidebarMenu.classList.remove('open');
+                            hamburgerButton.classList.remove('open');
+                        }
+
+
+                        // 計算目標物件的中心和大小
+                        const box = new THREE.Box3().setFromObject(lockedBuilding);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+
+                        // 計算一個合適的相機距離以包含整個物件
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const fov = camera.fov * (Math.PI / 180);
+                        let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.5; // 乘以1.5留一點邊距
+
+                        // 判斷物件是否為「場地」，如果是，則相機位置可以更高一些
+                        if (lockedBuilding.name === "場地") {
+                            cameraDistance *= 2.5; // 讓相機離場地更遠
+                        }
+
+                        let newCameraPosition;
+
+                        // **針對特定建築物調整攝影機位置 (與側邊選單點擊邏輯同步)**
+                        if (lockedBuilding.name === "惠蓀堂" || lockedBuilding.name === "區塊A") {
+                            // 惠蓀堂和區塊A使用相同的視角 (從左後方看)
+                            newCameraPosition = new THREE.Vector3(
+                                center.x - cameraDistance * 0.8, // X 軸偏左
+                                center.y + cameraDistance * 0.6, // 保持一定高度
+                                center.z - cameraDistance * 0.5  // 從 Z 軸（後方）看
+                            );
+                        } else if (lockedBuilding.name === "永豐銀行") { // 新增 永豐銀行 的視角設定
+                            // 針對永豐銀行調整視角，讓它不要被擋住
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 6.9, // 稍微偏左
+                                center.y + cameraDistance * 5.0, // 提高高度，從上方看
+                                center.z + cameraDistance * 0.8, // 稍微從前面看
+                            );
+                        } else if (lockedBuilding.name === "生技所") { // 新增 生技所 的視角設定
+                            // 針對生技所調整視角，讓它不要被擋住
+                            newCameraPosition = new THREE.Vector3(
+                                center.x - cameraDistance * 0.1, // 稍微偏左
+                                center.y + cameraDistance * 1.0, // 提高高度，從上方看
+                                center.z - cameraDistance * 0.8, // 稍微從前面看
+                            );
+                        } else if (lockedBuilding.name === "興創基地") { // 新增 興創基地 的視角設定
+                            // 針對興創基地調整視角，讓它不要被擋住
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 0.9, // 稍微偏左
+                                center.y + cameraDistance * 1.0, // 提高高度，從上方看
+                                center.z - cameraDistance * 0.8, // 稍微從前面看
+                            );
+                        }
+                        else {
+                            // 其他建築物使用預設的視角
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 0.5,
+                                center.y + cameraDistance * 0.8,
+                                center.z + cameraDistance * 0.7
+                            );
+                        }
+
+
+                        // 使用 Tween.js 進行平滑過渡
+                        new TWEEN.Tween(camera.position)
+                            .to(newCameraPosition, 1500) // 1500ms 過渡時間
+                            .easing(TWEEN.Easing.Quadratic.Out)
+                            .onUpdate(() => {
+                                camera.lookAt(center); // 在過渡期間持續看向目標中心
+                            })
+                            .onComplete(() => {
+                                controls.target.copy(center);
+                                controls.update();
+                            })
+                            .start();
+
+                        new TWEEN.Tween(controls.target)
+                            .to(center, 1500)
+                            .easing(TWEEN.Easing.Quadratic.Out)
+                            .start();
+
+
+                        // 顯示說明視窗並填充內容
+                        infoPanelTitle.textContent = lockedBuilding.name;
+                        infoPanelContent.textContent = buildingDescriptions[lockedBuilding.name] || "目前沒有該建築物的詳細說明。";
+                        infoPanel.classList.add('open');
+                    }
+                } else {
+                    // 點擊 Three.js 畫布的空白處
+                    if (lockedBuilding) {
+                        // 如果有鎖定的建築，則解鎖 (無需恢復材質)
+                        lockedBuilding = null;
+                        controls.enabled = true; // 啟用控制器
+                        console.log("點擊畫布空白處，解鎖視角。");
+                    }
+                    // 點擊畫布空白處時隱藏說明視窗
+                    infoPanel.classList.remove('open');
+                    // 點擊空白處時，如果右側選單是開著的，就關閉它
+                    if (sidebarMenu.classList.contains('open')) {
+                        sidebarMenu.classList.remove('open');
+                        hamburgerButton.classList.remove('open');
+                    }
+                }
+            } else {
+                // 如果點擊不在 Three.js 畫布上，則不做任何處理
+                console.log("點擊了非 Three.js 畫布的區域，不做特殊處理。");
+            }
+        }
+
+
+        // 監聽滑鼠移動事件
+        window.addEventListener('mousemove', onMouseMove, false);
+        // **修改：只在渲染器畫布上監聽點擊事件**
+        renderer.domElement.addEventListener('click', onMouseClick, false);
+
+
+        // 側邊選單點擊事件：移動到指定模型，同時顯示說明面板
+        const sidebarLinks = document.querySelectorAll('.sidebar ul li a[data-model-id]');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', (event) => {
+                event.preventDefault(); // 阻止連結預設行為
+
+                // 忽略 "認識興大" 連結的特殊處理 (已經在上面單獨處理)
+                if (event.target.id === 'know-nchu' || event.target.id === 'home-link') {
+                    console.log(`點擊了非模型連結：${event.target.textContent}`);
+                    // 讓這些連結的行為交給各自的事件監聽器處理
+                    sidebarMenu.classList.remove('open');
+                    hamburgerButton.classList.remove('open');
+                    return;
+                }
+
+                const modelId = event.target.dataset.modelId;
+                let buildingNameToFocus = '';
+
+                // 根據 data-model-id 映射到建築物名稱
+                if (modelId === 'blockA') {
+                    buildingNameToFocus = '區塊A';
+                } else if (modelId === 'blockB') {
+                    buildingNameToFocus = '區塊B';
+                } else if (modelId === 'blockC') {
+                    buildingNameToFocus = '區塊C';
+                } else if (modelId === 'blockD') {
+                    buildingNameToFocus = '區塊D';
+                } else if (modelId === 'blockE') {
+                    buildingNameToFocus = '區塊E';
+                }
+                // 您可以根據需要添加更多映射
+
+                if (buildingNameToFocus && loadedModel) {
+                    const targetObject = targetBuildings.get(buildingNameToFocus); // 從 Map 中獲取物件
+
+                    if (targetObject) {
+                        // 處理鎖定邏輯
+                        // 如果之前有鎖定物件，直接切換鎖定目標
+                        lockedBuilding = targetObject; // 鎖定選中的建築
+                        controls.enabled = false; // 禁用控制器，直到動畫完成
+
+                        // 計算目標物件的中心和大小
+                        const box = new THREE.Box3().setFromObject(targetObject);
+                        const center = box.getCenter(new THREE.Vector3());
+                        const size = box.getSize(new THREE.Vector3());
+
+                        // 計算一個合適的相機距離以包含整個物件
+                        const maxDim = Math.max(size.x, size.y, size.z);
+                        const fov = camera.fov * (Math.PI / 180);
+                        let cameraDistance = Math.abs(maxDim / 2 / Math.tan(fov / 2)) * 1.5; // 乘以1.5留一點邊距
+
+                        // 判斷物件是否為「場地」，如果是，則相機位置可以更高一些
+                        if (buildingNameToFocus === "場地") {
+                            cameraDistance *= 2.5; // 讓相機離場地更遠
+                        }
+
+                        let newCameraPosition;
+
+                        // **針對特定建築物調整攝影機位置 (與側邊選單點擊邏輯同步)**
+                        if (buildingNameToFocus === "惠蓀堂") {
+                            // 為惠蓀堂設定一個不同的視角 (例如：從正面稍微偏右方看)
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 0.2, // X 軸可以稍微偏右
+                                center.y + cameraDistance * 0.7, // 保持一定高度
+                                center.z + cameraDistance * 1.0  // 從 Z 軸（前方）稍微遠一點
+                            );
+                        } else if (buildingNameToFocus === "區塊A") {
+                            // 為區塊A設定另一個視角 (例如：從左後方看)
+                            newCameraPosition = new THREE.Vector3(
+                                center.x - cameraDistance * 0.8, // X 軸偏左
+                                center.y + cameraDistance * 0.6, // 保持一定高度
+                                center.z - cameraDistance * 0.5  // 從 Z 軸（後方）看
+                            );
+                        } else if (lockedBuilding.name === "永豐銀行" || buildingNameToFocus === "永豐銀行") {
+                            console.log("執行永豐銀行的視角調整區塊！");
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 0.3,
+                                center.y + cameraDistance * 1.0,
+                                center.z - cameraDistance * 0.8
+                            );
+                            console.log("center:", center);
+                            console.log("cameraDistance:", cameraDistance);
+                            console.log("計算後的新攝影機位置 newCameraPosition:", newCameraPosition);
+                        }
+                        else {
+                            // 其他建築物使用預設的視角
+                            newCameraPosition = new THREE.Vector3(
+                                center.x + cameraDistance * 0.5,
+                                center.y + cameraDistance * 0.8,
+                                center.z + cameraDistance * 0.7
+                            );
+                        }
+
+
+                        // 使用 Tween.js 進行平滑過渡
+                        new TWEEN.Tween(camera.position)
+                            .to(newCameraPosition, 1500) // 1500ms 過渡時間
+                            .easing(TWEEN.Easing.Quadratic.Out)
+                            .onUpdate(() => {
+                                camera.lookAt(center); // 在過渡期間持續看向目標中心
+                            })
+                            .onComplete(() => {
+                                // 過渡完成後，確保控制器目標也已更新
+                                controls.target.copy(center);
+                                controls.update(); // 立即更新控制器以反映新的目標
+                                // controls.enabled = true; // 動畫結束後啟用控制器 (根據需求決定是否啟用)
+                            })
+                            .start();
+
+                        new TWEEN.Tween(controls.target)
+                            .to(center, 1500)
+                            .easing(TWEEN.Easing.Quadratic.Out)
+                            .start();
+
+                        // 同時打開說明面板
+                        infoPanelTitle.textContent = buildingNameToFocus;
+                        infoPanelContent.textContent = buildingDescriptions[buildingNameToFocus] || '沒有此建築物的詳細說明。';
+                        infoPanel.classList.add('open');
+
+                    } else {
+                        console.warn(`找不到名為 "${buildingNameToFocus}" 的模型物件.`);
+                        // alert(`找不到模型中的 "${buildingNameToFocus}"。`); // 可以在開發時開啟，使用者端可以關閉
+                    }
+                }
+                // 關閉側邊選單
+                sidebarMenu.classList.remove('open');
+                hamburgerButton.classList.remove('open');
+            });
+        });
+
+        // TWEEN.js 動畫更新
+        function animateTween() {
+            requestAnimationFrame(animateTween);
+            TWEEN.update(); // 更新 Tween
+            // 注意：renderer.render() 在 animate() 中已經調用，避免重複渲染
+        }
+        animateTween();
+
+
+        // 動畫迴圈 (獨立於 animateTween，確保 Three.js 渲染和控制更新)
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // 只有在控制器啟用且模型載入後才更新控制器
+            if (controls.enabled && loadedModel) {
+                controls.update();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate(); // 啟動主渲染動畫迴圈
+
+        // 監聽視窗大小變化以調整渲染器和攝影機
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }, false);
+
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@tweenjs/tween.js@18.6.4/dist/tween.umd.min.js"></script>
+</body>
+
+</html>

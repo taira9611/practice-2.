@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>載入頁面</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            /* 將 background-color: black; 替換為以下背景圖片設定 */
+            background-image: url('./04-photo/nchu01.jpg'); /* 圖片路徑更新為相對路徑 */
+            /* 將 'YOUR_IMAGE_URL.jpg' 替換為您的圖片路徑 */
+            background-size: cover;
+            /* 確保圖片覆蓋整個背景 */
+            background-position: center;
+            /* 圖片置中 */
+            background-repeat: no-repeat;
+            /* 防止圖片重複 */
+            display: flex;
+            justify-content: center;
+            /* 水平置中 */
+            align-items: center;
+            /* 垂直置中 */
+            min-height: 100vh;
+            /* 確保內容至少佔據整個視窗高度 */
+            overflow: hidden;
+            /* 防止滾動條出現 */
+            font-family: Arial, sans-serif;
+        }
+
+        .loader-container {
+            text-align: center;
+        }
+
+        .progress-bar-container {
+            width: 300px;
+            /* 進度條容器寬度 */
+            height: 20px;
+            /* 進度條容器高度 */
+            background-color: #333;
+            /* 進度條容器背景色 */
+            border-radius: 10px;
+            /* 圓角 */
+            overflow: hidden;
+            /* 隱藏超出部分的進度 */
+            margin-top: 20px;
+            /* 與上方內容的間距 */
+            position: relative; /* 新增：讓百分比文字可以相對於此容器定位 */
+        }
+
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            /* 初始進度為0 */
+            background-color: #4CAF50;
+            /* 進度條顏色 */
+            border-radius: 10px;
+            transition: width 0.5s ease-in-out;
+            /* 平滑過渡效果 */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .progress-text {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* 新增：用於固定進度百分比文字的樣式 */
+        .progress-percentage-fixed {
+            position: absolute;
+            width: 100%; /* 佔據父容器的全部寬度 */
+            top: 0;
+            left: 0;
+            text-align: center;
+            line-height: 20px; /* 與進度條容器高度相同，用於垂直置中 */
+            color: white;
+            font-size: 12px;
+            z-index: 1; /* 確保文字在進度條上方 */
+        }
+    </style>
+</head>
+
+<body>
+    <div class="loader-container">
+        <div class="progress-text">載入中...</div>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progressBar"></div>
+            <span id="progressPercentage" class="progress-percentage-fixed">0%</span>
+        </div>
+    </div>
+
+    <script>
+        let progress = 0;
+        const progressBar = document.getElementById('progressBar');
+        const progressPercentage = document.getElementById('progressPercentage');
+
+        // 獲取URL參數
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromPage = urlParams.get('from'); // 'map', 'about' 或 'home'
+
+        function updateProgress() {
+            if (progress < 100) {
+                progress += Math.floor(Math.random() * 10) + 1; // 隨機增加進度
+                if (progress > 100) {
+                    progress = 100;
+                }
+                progressBar.style.width = progress + '%';
+                progressPercentage.textContent = progress + '%';
+                setTimeout(updateProgress, 200); // 每200毫秒更新一次
+            } else {
+                // 進度完成後根據來源跳轉頁面
+                if (fromPage === 'map') {
+                    window.location.href = 'nchu-map-12.html'; // 更新路徑
+                } else if (fromPage === 'about') {
+                    window.location.href = 'about-nchu.html'; // 更新路徑
+                } else if (fromPage === 'home') { // 新增判斷 'home' 參數
+                    window.location.href = 'index.html'; // 假設 index.html 在同一層級
+                } else {
+                    // 如果沒有指定來源，可以設定一個預設跳轉頁面或留在原地
+                    window.location.href = 'index.html'; // 預設跳轉回首頁，假設在同一層級
+                }
+            }
+        }
+
+        updateProgress(); // 開始更新進度
+    </script>
+</body>
+
+</html>
